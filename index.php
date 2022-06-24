@@ -1,35 +1,44 @@
-<form action="/" method="GET">
-    <p>Логин:</p>
-    <input name="login">
-    <p>Пароль:</p>
-    <input name="password">
-    <p>Сообщение:</p>
-    <input name="message"><br>
-    <button>Ок</button>
+<form action="/" method="post">
+    <input name="login" placeholder="введите логин"/>
+    <input name="password" placeholder="введите пароль"/>
+    <input name="message" placeholder="введите сообщение"/>
+    <button>Отправить</button>
 </form>
 
 <?php
-$login = 'ma';
-$password = '123456789';
+    function add_message($login, $message){
+        $message_object = (object) ['user' => $login, 'message' => $message, 'date' => date('d.m.Y H:i')];
+        $content = json_decode(file_get_contents("message.json"));
+        $content->messages[] = $message_object;
+        file_put_contents("message.json", json_encode($content));
+    }
 
-if (isset($_GET['login']) && isset($_GET['password']) && isset($_GET['message'])) {
+    function show_messages(){
+        $content = json_decode(file_get_contents("message.json"));
+        foreach($content->messages as $message){
+            echo "<p>";
+            echo "$message->user:       $message->message";
+            echo "</p>";
+            echo "<p>";
+            echo "$message->date";
+            echo "</p>";
 
-    if (($_GET['login'] == $login) && ($_GET['password'] == $password)) {
-        if ($_GET['message'] !== '') {
-            $json_data = json_decode(file_get_contents('mes.json'));
-            $newMessage = (object)['date' => date('d-m-y h:i:s'), 'user' => $_GET['login'], 'message' => $_GET['message']];
-            $json_data[] = $newMessage;
-            file_put_contents('mes.json', json_encode($json_data));
+            echo "<p>";
+            echo "=================";
+            echo "</p>";
         }
     }
-    else {
-        echo 'Не верный логин или пароль';
+
+    $login = $_POST["login"];
+    $password = $_POST["password"];
+    $message = $_POST["message"];
+
+    if (($login === "ma") ||
+    ($login === "shibo" && $password === "1234") || ($login === "user" && $password === "12345")){
+        add_message($login, $message);
+    } else{
+        echo "Неверный логин или пароль";
     }
-}
 
-$json_data = json_decode(file_get_contents('mes.json'));
-foreach($json_data as $cur){
-    echo $cur->date . ' | ' . $cur->user . ': ' . $cur->message;
-}
-
+    show_messages();
 ?>
